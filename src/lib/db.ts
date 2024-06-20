@@ -2,7 +2,7 @@ import mongoose, { Connection } from "mongoose";
 
 let isConnected:Connection | boolean = false;
 
-const connectDB = async () => {
+const db = async () => {
     if(isConnected){
         console.log("Mongodb already connected");
         return isConnected;
@@ -16,4 +16,4 @@ const connectDB = async () => {
         console.log(error);
     }
 }
-export default connectDB;
+export default db;

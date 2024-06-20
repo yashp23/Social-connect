@@ -1,21 +1,61 @@
 "use server"
-
 import { currentUser } from "@clerk/nextjs/server"
 import { v2 as cloudinary } from 'cloudinary';
-import connectDB from "./db";
-import { revalidatePath } from "next/cache";
-import { IUser } from "@/models/User";
-import { Post } from "@/models/Post";
+import { IUser } from "@/models/user.model";
+import { Post } from "@/models/post.model";
+import db from "./db";
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_NAME,
-    api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET
-});
+// cloudinary.config({
+//     cloud_name: process.env.CLOUDINARY_NAME,
+//     api_key: process.env.API_KEY,
+//     api_secret: process.env.API_SECRET,
+// });
+
+(async function() {
+
+    // Configuration
+    cloudinary.config({ 
+        cloud_name: 'dmder2l0x', 
+        api_key: '945537365172555', 
+        api_secret: 'T8RLHZk_SXJZSOy8kUil9qECAas' // Click 'View Credentials' below to copy your API secret
+    });
+    
+    // Upload an image
+     const uploadResult = await cloudinary.uploader
+       .upload(
+           'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
+               public_id: 'shoes',
+           }
+       )
+       .catch((error) => {
+           console.log(error);
+       });
+    
+    console.log(uploadResult);
+    
+    // Optimize delivery by resizing and applying auto-format and auto-quality
+    const optimizeUrl = cloudinary.url('shoes', {
+        fetch_format: 'auto',
+        quality: 'auto'
+    });
+    
+    console.log(optimizeUrl);
+    
+    // Transform the image: auto-crop to square aspect_ratio
+    const autoCropUrl = cloudinary.url('shoes', {
+        crop: 'auto',
+        gravity: 'auto',
+        width: 500,
+        height: 500,
+    });
+    
+    console.log(autoCropUrl);    
+})();
 
 // creating post using server actions
 export const createPostAction = async (inputText: string, selectedFile: string) => {
-    await connectDB();
+    await db();
+    console.log("connected");
     const user = await currentUser();
     if (!user) throw new Error('User not athenticated');
     if (!inputText) throw new Error('Input field is required');
@@ -46,7 +86,7 @@ export const createPostAction = async (inputText: string, selectedFile: string) 
                 user: userDatabase
             })
         }
-        revalidatePath("/");
+        // revalidatePath("/");
     } catch (error: any) {
         throw new Error(error);
     }

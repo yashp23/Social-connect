@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -31,7 +32,7 @@ export function PostDialog({ setOpen, open, src }: { setOpen: any, open: boolean
         }
     }
     const postActionHandler = async (formData: FormData) => {
-        const inputText = formData.get('inputText') as string;
+        const inputText = formData.get("inputText") as string;
         try {
             console.log("before post action")
             await createPostAction(inputText, selectedFile);
@@ -43,6 +44,7 @@ export function PostDialog({ setOpen, open, src }: { setOpen: any, open: boolean
         setOpen(false);
     }
 
+        console.log(createPostAction);
     return (
         <Dialog open={open}>
             <DialogContent onInteractOutside={() => setOpen(false)} className="sm:max-w-[425px]">
@@ -55,7 +57,7 @@ export function PostDialog({ setOpen, open, src }: { setOpen: any, open: boolean
                         </div>
                     </DialogTitle>
                 </DialogHeader>
-                <form action="">
+                <form action={postActionHandler}>
                     <div className="flex flex-col">
                         <Textarea
                             id="name"
@@ -85,7 +87,7 @@ export function PostDialog({ setOpen, open, src }: { setOpen: any, open: boolean
                         </div>
                     </DialogFooter>
                 </form>
-                <Button className="gap-2" onClick={() => inputRef?.current?.click()} variant={'ghost'}>
+                <Button className="gap-2" onClick={() => inputRef.current?.click()} variant={'ghost'}>
                     <Images className="text-blue-500" />
                     <p>Media</p>
                 </Button>
