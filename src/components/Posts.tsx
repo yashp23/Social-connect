@@ -1,8 +1,21 @@
+"use client"
 import React from 'react'
 
-const Posts = () => {
+import { IPostDocument } from '@/models/post.model'
+import Post from './Post'
+
+const Posts = ({ posts }: { posts: IPostDocument[] }) => {
+
   return (
-    <div>Posts</div>
+    <div  >
+      {
+        posts?.map((post) => {
+          return (
+            <Post key={post._id } post={post} />
+          )
+        })
+      }
+    </div>
   )
 }
 

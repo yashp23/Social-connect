@@ -4,43 +4,40 @@ import { v2 as cloudinary } from 'cloudinary';
 import { IUser } from "@/models/user.model";
 import { Post } from "@/models/post.model";
 import db from "./db";
+import { revalidatePath } from "next/cache";
+import { Comment } from "@/models/comment.model";
 
-// cloudinary.config({
-//     cloud_name: process.env.CLOUDINARY_NAME,
-//     api_key: process.env.API_KEY,
-//     api_secret: process.env.API_SECRET,
-// });
 
-(async function() {
+(async function () {
 
     // Configuration
-    cloudinary.config({ 
-        cloud_name: 'dmder2l0x', 
-        api_key: '945537365172555', 
-        api_secret: 'T8RLHZk_SXJZSOy8kUil9qECAas' // Click 'View Credentials' below to copy your API secret
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_NAME,
+        api_key: process.env.API_KEY,
+        api_secret: process.env.API_SECRET // Click 'View Credentials' below to copy your API secret
     });
-    
+
     // Upload an image
-     const uploadResult = await cloudinary.uploader
-       .upload(
-           'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
-               public_id: 'shoes',
-           }
-       )
-       .catch((error) => {
-           console.log(error);
-       });
-    
+    const uploadResult = await cloudinary.uploader
+        .upload(
+            'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
+            public_id: 'shoes',
+        }
+        )
+        .catch((error) => {
+            console.log(error);
+        });
+
     console.log(uploadResult);
-    
+
     // Optimize delivery by resizing and applying auto-format and auto-quality
     const optimizeUrl = cloudinary.url('shoes', {
         fetch_format: 'auto',
         quality: 'auto'
     });
-    
+
     console.log(optimizeUrl);
-    
+
     // Transform the image: auto-crop to square aspect_ratio
     const autoCropUrl = cloudinary.url('shoes', {
         crop: 'auto',
@@ -48,14 +45,14 @@ import db from "./db";
         width: 500,
         height: 500,
     });
-    
-    console.log(autoCropUrl);    
+
+    console.log(autoCropUrl);
 })();
 
-// creating post using server actions
+
+// get all post using server actions
 export const createPostAction = async (inputText: string, selectedFile: string) => {
     await db();
-    console.log("connected");
     const user = await currentUser();
     if (!user) throw new Error('User not athenticated');
     if (!inputText) throw new Error('Input field is required');
@@ -86,70 +83,70 @@ export const createPostAction = async (inputText: string, selectedFile: string) 
                 user: userDatabase
             })
         }
-        // revalidatePath("/");
+        revalidatePath("/");
     } catch (error: any) {
         throw new Error(error);
     }
 }
-// // get all post using server actions
-// export const getAllPosts = async () => {
-//     try {
-//         await connectDB();
-//         const posts = await Post.find().sort({ createdAt: -1 }).populate({ path: 'comments', options: { sort: { createdAt: -1 } } });
-//         if(!posts) return [];
-//         return JSON.parse(JSON.stringify(posts));
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
+// get all post using server actions
+export const getAllPosts = async () => {
+    try {
+        await db();
+        const posts = await Post.find().sort({ createdAt: -1 }).populate({ path: 'comments', options: { sort: { createdAt: -1 } } });
+        if(!posts) return [];
+        return JSON.parse(JSON.stringify(posts));
+    } catch (error) {
+        console.log(error);
+    }
+}
 
-// // delete post by id
-// export const deletePostAction = async (postId: string) => {
-//     await connectDB();
-//     const user = await currentUser();
-//     if (!user) throw new Error('User not authenticated.');
-//     const post = await Post.findById(postId);
-//     if (!post) throw new Error('Post not found.');
+// delete post by id
+export const deletePostAction = async (postId: string) => {
+    await db();
+    const user = await currentUser();
+    if (!user) throw new Error('User not authenticated.');
+    const post = await Post.findById(postId);
+    if (!post) throw new Error('Post not found.');
 
-//     // keval apni hi post delete kr payega.
-//     if (post.user.userId !== user.id) {
-//         throw new Error('You are not an owner of this Post.');
-//     }
-//     try {
-//         await Post.deleteOne({ _id: postId });
-//         revalidatePath("/");
-//     } catch (error: any) {
-//         throw new Error('An error occurred', error);
-//     }
-// }
+    // keval apni hi post delete kr payega.
+    if (post.user.userId !== user.id) {
+        throw new Error('You are not an owner of this Post.');
+    }
+    try {
+        await Post.deleteOne({ _id: postId });
+        revalidatePath("/");
+    } catch (error: any) {
+        throw new Error('An error occurred', error);
+    }
+}
 
-// export const createCommentAction = async (postId: string, formData: FormData) => {
-//     try {
-//         const user = await currentUser();
-//         if (!user) throw new Error("User not authenticated");
-//         const inputText = formData.get('inputText') as string;
-//         if (!inputText) throw new Error("Field is required");
-//         if (!postId) throw new Error("Post id required");
+export const createCommentAction = async (postId: string, formData: FormData) => {
+    try {
+        const user = await currentUser();
+        if (!user) throw new Error("User not authenticated");
+        const inputText = formData.get('inputText') as string;
+        if (!inputText) throw new Error("Field is required");
+        if (!postId) throw new Error("Post id required");
 
-//         const userDatabase: IUser = {
-//             firstName: user.firstName || "Patel",
-//             lastName: user.lastName || "Mern Stack",
-//             userId: user.id,
-//             profilePhoto: user.imageUrl
-//         }
-//         const post = await Post.findById({ _id: postId });
-//         if (!post) throw new Error('Post not found');
+        const userDatabase: IUser = {
+            firstName: user.firstName || "Patel",
+            lastName: user.lastName || "Mern Stack",
+            userId: user.id,
+            profilePhoto: user.imageUrl
+        }
+        const post = await Post.findById({ _id: postId });
+        if (!post) throw new Error('Post not found');
 
-//         const comment = await Comment.create({
-//             textMessage: inputText,
-//             user: userDatabase,
-//         });
+        const comment = await Comment.create({
+            textMessage: inputText,
+            user: userDatabase,
+        });
 
-//         post.comments?.push(comment._id);
-//         await post.save();
+        post.comments?.push(comment.id);
+        await post.save();
 
-//         revalidatePath("/");
-//     } catch (error) {
-//         throw new Error('An error occurred')
-//     }
-// }
+        revalidatePath("/");
+    } catch (error) {
+        throw new Error('An error occurred')
+    }
+}

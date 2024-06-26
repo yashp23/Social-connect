@@ -1,8 +1,10 @@
 import Image from 'next/image'
 import React from 'react'
 import ProfilePhoto from './shared/ProfilePhoto'
+import { getAllPosts } from '@/lib/serveractions'
 
-export default function Sidebar({ user }: { user: any }) {
+export default async function Sidebar({ user }: { user: any }) {
+  const posts = await getAllPosts();
   return (
     <div className='hidden md:block w-[20%] h-fit bg-white rounded  '>
 
@@ -72,7 +74,7 @@ export default function Sidebar({ user }: { user: any }) {
             Posts
           </p>
 
-          <p className="text-blue-500 font-bold">0
+          <p className="text-blue-500 font-bold">{posts.length}
 
           </p>
         </div>
