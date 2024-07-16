@@ -11,9 +11,9 @@ const Navbar = () => {
             <div className='flex items-center max-w-6xl justify-between h-18 mx-auto px-3'>
                 <div className='flex items-center gap-2'>
                     <Image src={'/social.webp'} alt='logo' width={100} height={80} />
-                    <div className='md:block hidden'>
-                        <SearchInput />
-                    </div>
+                        <div className='md:block hidden'>
+                            <SearchInput />
+                        </div>
                 </div>
 
                 <div className='flex items-center gap-5'>
