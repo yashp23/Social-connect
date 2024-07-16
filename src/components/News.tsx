@@ -1,49 +1,70 @@
-import { Info } from 'lucide-react'
-import React from 'react'
-interface NAVITEMS {
-  heading: string,
-  subHeading: string
-}
-const newsItems: NAVITEMS[] = [
-  {
-    heading: "E-retailer retag health drinks",
-    subHeading: "4h ago - 345 readers"
-  },
-  {
-    heading: "Lets transport raises $22 million",
-    subHeading: "4h ago - 323 readers"
-  },
-  {
-    heading: "Casual waer is in at India Inc",
-    subHeading: "4h ago - 234 readers"
-  },
-  {
-    heading: "Snaller cities go on loans",
-    subHeading: "4h ago - 112 readers"
-  },
-]
+// components/RightSide.tsx
+"use client"
+import React, { useEffect, useState } from "react";
+import BlogCard from "./BlogCard";
+import { Article } from "@/lib/typevalidator";
 
-const News = () => {
+interface RightSideProps {}
+
+const RightSide: React.FC<RightSideProps> = () => {
+  const [image, setImage] = useState<Article[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const Api =
+    "https://newsapi.org/v2/top-headlines?country=in&apiKey=c6536857904840f696cb89b863015efd";
+
+  const fetchInternalImage = async (url: string) => {
+    try {
+      const res = await fetch(url);
+      const blogImage = await res.json();
+
+      // Take only 5 articles with images
+      const newArticles = blogImage.articles
+        .filter((article: Article) => article.urlToImage)
+        .slice(0, 5);
+
+      setImage((prevImage) => [...prevImage, ...newArticles]);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInternalImage(Api);
+  }, []);
+
   return (
-    <div className='hidden md:block w-[25%] bg-white h-fit border-gray-300 rounded-lg'>
-      <div className="flex items-center justify-between p-3">
-        <h1 className='font-medium mx-2'>Trending News</h1>
-        <Info size={18} />
+    <div className="bg-[#5e5d5d] w-full md:w-[30%] h-full rounded-lg flex flex-col items-start justify-center p-4">
+      <div className="w-full text-2xl">
+        <h1 className="text-md font-extrabold dark:border border-yellow-600 dark:border-white dark:text-emerald-950 flex justify-center bg-green-300 p-2 rounded-lg">
+          Trending News
+        </h1>
       </div>
-      <div >
-        {
-            newsItems.map((item, index) => {
-              return (
-                <div key={index} className='flex items-center p-3 hover:bg-gray-200 cursor-pointer'>
-                  <h1 className='text-sm font-medium'>{item.heading}</h1>
-                  <p className='text-xs text-gray-500'>{item.subHeading}</p>
-                </div>
-              )
-            })
-        }
+      <div className="mt-4 overflow-y-auto w-full p-2">
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-white">Loading...</p>
+          </div>
+        ) : (
+          <div className="overflow-y-auto h-[calc(100vh-160px)]">
+            {image.map((item, index) => (
+              <div key={index} className="mb-4 shadow-lg">
+                <BlogCard
+                  title={item.title}
+                  description={item.description}
+                  urlToImage={item.urlToImage}
+                  author={item.author}
+                  publishedAt={item.publishedAt}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default News
+export default RightSide;
